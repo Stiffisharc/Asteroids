@@ -1,24 +1,31 @@
 import sys
 import pygame
 import pygame_menu
+import pygame_widgets
+from pygame_widgets.progressbar import ProgressBar
 from constants import *
 from player import Player, Shot
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
-from startmenu import StartMenu
+#from startmenu import StartMenu
 
 def main():
     print("Starting Asteroids!")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
-    pygame.init
+    print(f"======== Game Start ========")
+    pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     bg = pygame.image.load("Images/galaxy_background.jpg")
     clock = pygame.time.Clock()
     dt = 0
 
-    game_running = False
+    game_running = True
     player = None
+    points = 0
+    charge = 0
+
+    font = pygame.font.SysFont("monospace", 15)
 
     updatables  = pygame.sprite.Group()
     drawables = pygame.sprite.Group()
@@ -34,6 +41,9 @@ def main():
     while True:
 
         if game_running == False:
+            raise Exception("game_running set to False")
+            player = None
+            Player.containers = ()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
@@ -41,11 +51,11 @@ def main():
             clock.tick(60)
             updatables.update(dt)
 
+            for drawable in drawables:
+                drawable.draw(screen)
+
             menu = StartMenu("Asteroids!", SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4, theme=pygame_menu.themes.THEME_DARK)
             menu.mainloop(screen)
-
-            for asteroid in asteroids:
-                asteroid.draw(screen)
 
             dt = clock.get_time() / 1000
             pygame.display.flip()
@@ -58,10 +68,16 @@ def main():
             clock.tick(60)
             updatables.update(dt)
 
-            if game_running == True:
-                Player.containers = (updatables, drawables)
-                if player == None:
-                    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+            points_text = font.render(f"Points: {points}", 1, (255,255,255))
+            screen.blit(points_text, (50, 50))
+
+            if charge >= 50:
+                ultimate_text = font.render("Ultimate Ready!", 1, (0,200,0))
+                screen.blit(ultimate_text, (50, 75))
+
+            Player.containers = (updatables, drawables)
+            if player == None:
+                player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         
             for drawable in drawables:
                 drawable.draw(screen)
@@ -69,10 +85,14 @@ def main():
                 for shot in shots:
                     if asteroid.collision(shot) == True:
                         asteroid.split()
+                        points += 10
+                        charge += 1
                         shot.kill()
                 if player.collision(asteroid) == True:
-                    #sys.exit("Game Over!")
-                    game_running = False
+                    print(f"Your got {points} points!")
+                    points = 0
+                    sys.exit("======== Game Over! ========")
+                    #game_running = False
         
             dt = clock.get_time() / 1000
             pygame.display.flip()

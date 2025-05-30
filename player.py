@@ -32,12 +32,31 @@ class Player(CircleShape):
             self.rotate(dt)
         if keys[pygame.K_w]:
             self.move(dt)
+            if self.position.x < 0:
+                self.position.x = 1300
+            if self.position.x > 1300:
+                self.position.x = 0
+            if self.position.y < 0:
+                self.position.y = 750
+            if self.position.y > 750:
+                self.position.y = 0
         if keys[pygame.K_s]:
             self.move(-dt)
+            if self.position.x < 0:
+                self.position.x = 1300
+            if self.position.x > 1300:
+                self.position.x = 0
+            if self.position.y < 0:
+                self.position.y = 750
+            if self.position.y > 750:
+                self.position.y = 0
         if keys[pygame.K_SPACE]:
             if self.timer <= 0:
                 self.shoot()
                 self.timer = PLAYER_SHOOT_COOLDOWN
+        if keys[pygame.K_LALT]:
+            #ultimate attack goes here
+            pass
 
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -50,9 +69,21 @@ class Player(CircleShape):
 class Shot(CircleShape):
     def __init__(self, x, y):
         super().__init__(x, y, SHOT_RADIUS)
+        self.timer = 100
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 255, 255), self.position, self.radius, 2)
 
     def update(self, dt):
+        self.timer -= 1
+        if self.timer <= 0:
+            self.kill()
         self.position += self.velocity * dt
+        if self.position.x < 0:
+            self.position.x = 1300
+        if self.position.x > 1300:
+            self.position.x = 0
+        if self.position.y < 0:
+            self.position.y = 750
+        if self.position.y > 750:
+            self.position.y = 0
